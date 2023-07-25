@@ -41,7 +41,7 @@ const getContact = asyncHandler(async (req, res, next) => {
     }
 });
 
-const updateContact = asyncHandler(async (req, res) => {
+const updateContact = asyncHandler(async (req, res, next) => {
     try {
         const contact = await Contact.findById(req.params.id);
 
@@ -50,16 +50,22 @@ const updateContact = asyncHandler(async (req, res) => {
             const error = new Error("Contact not found :{");
             throw error;
         } else {
-            const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true })
-            res.status(201).json({ updatedContact });
+            // Assuming `contact.user_id` is a string and `req.user.id` is also a string.
+            if (contact.user_id.toString() !== req.user.id) {
+                res.status(401);
+                const error = new Error("Unauthorized to update this contact");
+                throw error;
+            }
 
+            const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            res.status(201).json({ updatedContact });
         }
     } catch (error) {
         next(error);
     }
 });
 
-const deleteContact = asyncHandler(async (req, res) => {
+const deleteContact = asyncHandler(async (req, res, next) => {
     try {
         const contact = await Contact.findById(req.params.id);
 
@@ -68,7 +74,12 @@ const deleteContact = asyncHandler(async (req, res) => {
             const error = new Error("Contact not found :{");
             throw error;
         } else {
-            const deletedContact = await Contact.findByIdAndRemove(req.params.id);
+            if (contact.user_id.toString() !== req.user.id) {
+                res.status(401);
+                const error = new Error("Unauthorized to update this contact");
+                throw error;
+            }
+            const deletedContact = await Contact.deleteOne({ _id: req.params.id });
             res.status(200).json({ deletedContact });
 
 
