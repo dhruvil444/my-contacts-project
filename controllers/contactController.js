@@ -43,7 +43,7 @@ const getContact = asyncHandler(async (req, res, next) => {
 
 const updateContact = asyncHandler(async (req, res, next) => {
     try {
-        const contact = await Contact.findById(req.params.id);
+        const contact = await Contact.findById("64bf7850b9e2d976a6fcecb6");
 
         if (!contact) {
             res.status(404);
